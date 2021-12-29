@@ -1,6 +1,6 @@
 	.data
 
-message: .asciiz "Entrez le nom du fichier \n"
+message: .asciiz "Entrez le chemin dossier du fichier que vous souhaitez jouer: \n"
 nomFichier: .space 1024
 fichier: .space 1024
 
@@ -15,17 +15,21 @@ syscall
 li $v0, 8		#syscall
 la $a0, nomFichier	#adresse du tampon	#il faut entrer l'adresse du fichier ?
 li $a1, 100		#nb max car lu
-move $t0,$a0           #on met la chaîne de caractères correspondant au nom du fichier dans t0
+
 
 syscall
 
+addi $t0,$t0,0 			#on initialise un indice à 0
+jal CALCULNOMBRECARACTERES 	#on va à la boucle qui permet de calculer le nombre de caractères de la chaîne pour pouvoir supprimer le caractère de fin de chaîne et empêchant d'ouvrir le fichier
+
+CONTINUER:
 #open file
 li $v0, 13
 la $a0, nomFichier
-move $a0,$t0
 li $a1, 0		#flag 
+li $a2, 0               #mode lecture seulement
 syscall
-move $s0, $v0		#save file descriptor
+move $s0, $v0		#on enregistre le file descriptor dans $s0
 
 
 #read the file
@@ -47,3 +51,17 @@ syscall
 
 li $v0, 10
 syscall
+
+#----PROCEDURE POUR SUPPRIMER LE CARACTERE DE FIN DE CHAINE EMPECHANT D'ENREGISTRER CORRECTEMENT LE NOM DU FICHIER-----#
+CALCULNOMBRECARACTERES:
+lb $t1,nomFichier($t0) 			#On load le caractère à l'indice contenu dans $t0 
+addi $t0,$t0,1 				#On incrémente l'indice
+bnez $t1, CALCULNOMBRECARACTERES	#tant que le caratère n'est pas 0 on continue 
+j SUPPRCARACTFIN 			#on sort de la boucle mais il reste quelques instructions à exécuter au niveau de l'étiquette mentionnée
+
+SUPPRCARACTFIN:
+addi $t0, $t0, -2 			#on diminue l'indice de deux enlevant ainsi le caractère de fin de chaîne
+sb $zero, nomFichier($t0) 		#on "corrige le nom du fichier" en remplaçant le / du caractère de fin de chaîne par un 0
+jr $ra
+#---------------------------------------------------------------------------------------------------------------------#
+
