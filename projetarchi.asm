@@ -39,10 +39,49 @@ la $a1, fichier
 la $a2, 1024
 syscall
 
-#print
-li $v0, 4
-la $a0, fichier
-syscall
+
+#test print fichier utilisé au début pour vérifier l'ouverture du fichier#
+#li $v0, 4
+#la $a0, fichier
+#syscall
+
+#________ANALYSE DE L'EN TETE_________#
+la $t1,fichier
+lh $t2,2($t1) 		# $t2 contient le type de fichier MIDI
+lh $t3,10($t1)		# $t3 contient le nombre de tracks
+lh $t4,12($t1)		# $t4 contient le nombre de ticks par crochet (quarter note = au quart d'un temps)
+#_____________________________________#
+
+addi $a2,$a2,0
+beq $t2,$a2, MIDI0
+
+#on entre ici si c'est un fichier midi de type 0 i.e avec une seule track obligatoirement#
+MIDI0:
+#récupération du nombre d'octets de la track#
+lb $s0, 18($t1)
+lb $s1, 19($t1)
+lb $s2, 20($t1)
+lb $s3, 21($t1)
+
+sll $s0,$s0,0
+sll $s1,$s1,8
+sll $s2,$s2,16
+sll $s3,$s3,24
+
+or $s0,$s0,$s1
+or $s0,$s0,$s2
+or $s0,$s0,$s3
+
+
+
+
+
+
+
+
+
+
+
 
 #Close
 li $v0, 16
