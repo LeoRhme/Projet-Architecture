@@ -1,0 +1,2 @@
+This project was made during a semester in embedded systems engineering course. I couldn't achieve it, but you can see I practised some assembly language.
+The purpose of this project was to create a midi sequencer able to read any midi type files.
